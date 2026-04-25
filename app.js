@@ -52,6 +52,21 @@ function removeSkeletons() {
   document.querySelectorAll('.skeleton').forEach(el => el.classList.remove('skeleton'));
 }
 
+function fetchLocalTime(timezone) {
+  $.getJSON(`https://worldtimeapi.org/api/timezone/${timezone}`)
+    .done(function(data) {
+      const dateTime = new Date(data.datetime);
+      elLocalTime.textContent = `Local Time: ${dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    })
+    .fail(function() {
+      const browserTime = new Date();
+      elLocalTime.textContent = `Local Time (Browser fallback): ${browserTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    })
+    .always(function() {
+      console.log(`WorldTimeAPI request completed at: ${new Date().toISOString()}`);
+    });
+}
+
 async function fetchWeatherData(city) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -69,7 +84,7 @@ async function fetchWeatherData(city) {
       return;
     }
 
-    const { latitude, longitude, name } = geoData.results[0];
+    const { latitude, longitude, name, timezone } = geoData.results[0];
 
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
                        `&current_weather=true` +
@@ -83,6 +98,7 @@ async function fetchWeatherData(city) {
     clearTimeout(timeoutId);
 
     populateUI(name, weatherData);
+    fetchLocalTime(timezone);
 
   } catch (err) {
     clearTimeout(timeoutId);
@@ -105,6 +121,7 @@ function populateUI(cityName, data) {
   
   const hourIdx = new Date().getHours();
   elHumidity.textContent    = `Humidity: ${data.hourly.relativehumidity_2m[hourIdx]}%`;
+  elLocalTime.textContent   = 'Local Time: loading...';
 
   forecastRow.innerHTML = '';
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
