@@ -8,15 +8,24 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
-
   <div class="container">
 
     <!-- Search -->
     <div class="search-container">
       <input type="text" id="cityInput" placeholder="Enter city name (min 2 chars)...">
       <button id="searchBtn">Search</button>
-      <div id="recentChips" class="recent-chips"></div>
-      <div id="validationMsg" class="error-text"></div>
+    </div>
+
+    <!-- Recent chips -->
+    <div id="recent-chips" class="recent-chips"></div>
+
+    <!-- Validation message -->
+    <div id="validationMsg" class="error-text"></div>
+
+    <!-- Error banner -->
+    <div id="error-banner" class="error-banner hidden">
+      <span id="error-msg"></span>
+      <button id="retry-btn" class="retry-btn hidden">Retry</button>
     </div>
 
     <!-- Current weather card -->
@@ -29,10 +38,10 @@
         <div class="details">
           <span id="humidity" class="skeleton">Humidity: --%</span>
           <span id="windSpeed" class="skeleton">Wind: -- km/h</span>
-<div class="unit-toggle">
-  <button id="btnC" class="unit-btn active">°C</button>
-  <button id="btnF" class="unit-btn">°F</button>
-          </div>
+        </div>
+        <div class="unit-toggle">
+          <button id="btnC" class="unit-btn active">°C</button>
+          <button id="btnF" class="unit-btn">°F</button>
         </div>
       </div>
     </div>
@@ -49,7 +58,6 @@
     </div>
 
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>

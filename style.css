@@ -1,4 +1,6 @@
+/* WeatherNow Dashboard — Optimized Final Version */
 
+/* 1. Base & Layout */
 body {
     font-family: 'Segoe UI', system-ui, sans-serif;
     background: #f0f2f5;
@@ -9,45 +11,37 @@ body {
 
 .container { width: 100%; max-width: 800px; }
 
+/* 2. Search & Interactive Elements */
+.search-container { display: flex; gap: 10px; margin-bottom: 20px; }
 
-.search-container {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.search-container input, .search-container button {
+.search-container input, .search-container button, .unit-btn, .chip, .retry-btn {
     padding: 10px;
     border-radius: 8px;
     font-size: 1rem;
+    transition: 0.2s;
     border: none;
 }
 
-.search-container input {
-    flex: 1;
-    border: 1px solid #ccc;
-    outline: none;
-}
+.search-container input { flex: 1; border: 1px solid #ccc; outline: none; }
 
-.search-container button {
+.search-container button, .unit-btn.active, .chip:hover {
     background: #4a90e2;
     color: white;
     cursor: pointer;
-    transition: 0.2s;
 }
 
-
+/* 3. Cards & Structure */
 .current-weather-card, .forecast-card {
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     text-align: center;
+    margin-bottom: 20px;
 }
 
-.current-weather-card { padding: 25px; margin-bottom: 20px; }
-
-.details { display: flex; justify-content: center; gap: 30px; margin-top: 10px; }
-
+.current-weather-card { padding: 25px; }
+.details, .unit-toggle, .recent-chips { display: flex; justify-content: center; gap: 15px; margin-top: 12px; }
+.recent-chips { flex-wrap: wrap; margin-bottom: 15px; }
 
 .forecast-container {
     display: grid;
@@ -55,9 +49,9 @@ body {
     gap: 10px;
 }
 
-.forecast-card { padding: 15px; min-height: 120px; }
+.forecast-card { padding: 15px; min-height: 120px; margin-bottom: 0; }
 
-
+/* 4. Skeleton Animation (Required Task 1.4) */
 @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
@@ -74,52 +68,31 @@ body {
     margin: 5px auto;
 }
 
-
-.recent-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
+/* 5. Error Handling & Chips (Required Tasks 3 & 4) */
+.error-banner {
+    background: #fee2e2;
+    border: 1px solid #f87171;
+    color: #b91c1c;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
+
+.error-banner.hidden { display: none; }
+
+.retry-btn { background: #b91c1c; color: white; padding: 5px 12px; font-size: 0.8rem; cursor: pointer; }
 
 .chip {
-  padding: 5px 12px;
-  border-radius: 999px;
-  border: 1px solid #4a90e2;
-  background: white;
-  color: #4a90e2;
-  font-size: 0.82rem;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+    padding: 6px 14px;
+    background: white;
+    border: 1px solid #4a90e2;
+    color: #4a90e2;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
 }
 
-.chip:hover {
-  background: #4a90e2;
-  color: white;
-}
-
-
-.unit-toggle {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 12px;
-}
-
-.unit-btn {
-  padding: 5px 14px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: white;
-  color: #555;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-}
-
-.unit-btn.active {
-  background: #4a90e2;
-  border-color: #4a90e2;
-  color: white;
-  font-weight: 700;
-}
+.unit-btn { background: #fff; border: 1px solid #ccc; cursor: pointer; }
