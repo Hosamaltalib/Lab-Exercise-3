@@ -15,6 +15,7 @@
     <div class="search-container">
       <input type="text" id="cityInput" placeholder="Enter city name (min 2 chars)...">
       <button id="searchBtn">Search</button>
+      <div id="recentChips" class="recent-chips"></div>
       <div id="validationMsg" class="error-text"></div>
     </div>
 
@@ -28,6 +29,10 @@
         <div class="details">
           <span id="humidity" class="skeleton">Humidity: --%</span>
           <span id="windSpeed" class="skeleton">Wind: -- km/h</span>
+<div class="unit-toggle">
+  <button id="btnC" class="unit-btn active">°C</button>
+  <button id="btnF" class="unit-btn">°F</button>
+          </div>
         </div>
       </div>
     </div>

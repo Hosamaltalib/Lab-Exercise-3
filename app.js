@@ -10,10 +10,10 @@ const elHumidity    = document.getElementById('humidity');
 const elWindSpeed   = document.getElementById('windSpeed');
 
 let debounceTimer;
-
 const state = {
   lastSearch: null,
   weatherData: null,
+  unit: 'C'
 };
 
 const weatherLookup = {
@@ -35,6 +35,10 @@ function getWeatherInfo(code) {
   return weatherLookup[code] || weatherLookup.default;
 }
 
+function convertTemp(celsius) {
+  return state.unit === 'F' ? (celsius * 9/5) + 32 : celsius;
+}
+
 function showError(msg, showRetry = false) {
   const banner = document.getElementById('error-banner');
   const retryBtn = document.getElementById('retry-btn');
@@ -54,6 +58,26 @@ function removeSkeletons() {
   document.querySelectorAll('.skeleton').forEach(el => el.classList.remove('skeleton'));
 }
 
+function updateRecentSearches(city) {
+  let searches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+  searches = [city, ...searches.filter(s => s !== city)].slice(0, 5);
+  localStorage.setItem('recentSearches', JSON.stringify(searches));
+  renderSearchChips();
+}
+
+function renderSearchChips() {
+  const container = document.getElementById('recent-chips');
+  if (!container) return;
+  const searches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+  container.innerHTML = searches.map(city => `<button class="chip">${city}</button>`).join('');
+  container.querySelectorAll('.chip').forEach(btn => {
+    btn.onclick = () => {
+      cityInput.value = btn.textContent;
+      handleSearch();
+    };
+  });
+}
+
 function fetchLocalTime(timezone) {
   $.getJSON(`https://worldtimeapi.org/api/timezone/${timezone}`)
     .done(function(data) {
@@ -62,7 +86,7 @@ function fetchLocalTime(timezone) {
     })
     .fail(function() {
       const browserTime = new Date();
-      elLocalTime.textContent = `Local Time (Browser fallback): ${browserTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      elLocalTime.textContent = `Local Time (Fallback): ${browserTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     })
     .always(function() {
       console.log(`WorldTimeAPI request completed at: ${new Date().toISOString()}`);
@@ -72,107 +96,72 @@ function fetchLocalTime(timezone) {
 async function fetchWeatherData(city) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
-
   try {
     const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`;
     const geoRes = await fetch(geoUrl, { signal: controller.signal });
-
     if (!geoRes.ok) throw new Error(`HTTP Error: ${geoRes.status}`);
-
     const geoData = await geoRes.json();
-
     if (!geoData.results || geoData.results.length === 0) {
-      showError(`City "${city}" not found. Try again.`);
+      showError(`City "${city}" not found.`, false);
       return;
     }
-
     const { latitude, longitude, name, timezone } = geoData.results[0];
-
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
-                       `&current_weather=true` +
-                       `&hourly=temperature_2m,relativehumidity_2m,windspeed_10m` + 
-                       `&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
-
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=relativehumidity_2m&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
     const weatherRes = await fetch(weatherUrl, { signal: controller.signal });
-    if (!weatherRes.ok) throw new Error(`HTTP Error: ${weatherRes.status}`);
-
     const weatherData = await weatherRes.json();
     clearTimeout(timeoutId);
-
-    populateUI(name, weatherData);
+    state.weatherData = weatherData;
+    updateRecentSearches(name);
+    populateUI(name);
     fetchLocalTime(timezone);
-
   } catch (err) {
     clearTimeout(timeoutId);
-    const errMsg = err.name === 'AbortError' ? 'Request timed out (10s)' : err.message;
-    showError(errMsg, true);
+    showError(err.name === 'AbortError' ? 'Timeout (10s)' : err.message, true);
   }
 }
 
-function populateUI(cityName, data) {
+function populateUI(cityName) {
   removeSkeletons();
-  state.weatherData = data;
-
+  const data = state.weatherData;
   const current = data.current_weather;
   const { desc, emoji } = getWeatherInfo(current.weathercode);
-
-  elCityName.textContent    = cityName;
-  elTemp.textContent        = `${Math.round(current.temperature)}°C`;
+  elCityName.textContent = cityName;
+  elTemp.textContent = `${Math.round(convertTemp(current.temperature))}°${state.unit}`;
   elDescription.textContent = `${emoji} ${desc}`;
-  elWindSpeed.textContent   = `Wind: ${current.windspeed} km/h`;
-  
+  elWindSpeed.textContent = `Wind: ${current.windspeed} km/h`;
   const hourIdx = new Date().getHours();
-  elHumidity.textContent    = `Humidity: ${data.hourly.relativehumidity_2m[hourIdx]}%`;
-  elLocalTime.textContent   = 'Local Time: loading...';
-
+  elHumidity.textContent = `Humidity: ${data.hourly.relativehumidity_2m[hourIdx]}%`;
+  elLocalTime.textContent = 'Local Time: loading...';
   forecastRow.innerHTML = '';
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
   for (let i = 0; i < 7; i++) {
     const date = new Date(data.daily.time[i]);
     const { emoji: fEmoji } = getWeatherInfo(data.daily.weathercode[i]);
-    
+    const hi = Math.round(convertTemp(data.daily.temperature_2m_max[i]));
+    const lo = Math.round(convertTemp(data.daily.temperature_2m_min[i]));
     const card = document.createElement('div');
     card.className = 'forecast-card';
-    card.innerHTML = `
-      <p><strong>${days[date.getDay()]}</strong></p>
-      <p style="font-size:1.5rem">${fEmoji}</p>
-      <p>${Math.round(data.daily.temperature_2m_max[i])}° / ${Math.round(data.daily.temperature_2m_min[i])}°</p>
-    `;
+    card.innerHTML = `<p><strong>${days[date.getDay()]}</strong></p><p style="font-size:1.5rem">${fEmoji}</p><p>${hi}° / ${lo}°</p>`;
     forecastRow.appendChild(card);
   }
 }
 
 function handleSearch() {
   const city = cityInput.value.trim();
-  
   if (city.length < 2) {
-    validationMsg.textContent = 'Enter at least 2 characters.';
+    validationMsg.textContent = 'Enter at least 2 chars.';
     return;
   }
-
   validationMsg.textContent = '';
   hideError();
   fetchWeatherData(city);
 }
 
-searchBtn.addEventListener('click', handleSearch);
-
-cityInput.addEventListener('input', () => {
+searchBtn.onclick = handleSearch;
+cityInput.oninput = () => {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    if (cityInput.value.trim().length >= 2) {
-      handleSearch();
-    }
-  }, 500);
-});
+  debounceTimer = setTimeout(() => { if (cityInput.value.trim().length >= 2) handleSearch(); }, 500);
+};
+cityInput.onkeydown = (e) => { if (e.key === 'Enter') { clearTimeout(debounceTimer); handleSearch(); } };
 
-cityInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    clearTimeout(debounceTimer);
-    handleSearch();
-  }
-});
-
-const retryBtn = document.getElementById('retry-btn');
-if (retryBtn) retryBtn.addEventListener('click', handleSearch);
+window.onload = renderSearchChips;

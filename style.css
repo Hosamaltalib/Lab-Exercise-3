@@ -73,3 +73,53 @@ body {
     display: block;
     margin: 5px auto;
 }
+
+
+.recent-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.chip {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid #4a90e2;
+  background: white;
+  color: #4a90e2;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.chip:hover {
+  background: #4a90e2;
+  color: white;
+}
+
+
+.unit-toggle {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.unit-btn {
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #555;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.unit-btn.active {
+  background: #4a90e2;
+  border-color: #4a90e2;
+  color: white;
+  font-weight: 700;
+}
