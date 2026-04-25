@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeatherNow Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Search -->
+    <div class="search-container">
+      <input type="text" id="cityInput" placeholder="Enter city name (min 2 chars)...">
+      <button id="searchBtn">Search</button>
+      <div id="validationMsg" class="error-text"></div>
+    </div>
+
+    <!-- Current weather card -->
+    <div class="current-weather-card" id="currentWeather">
+      <h2 id="cityName" class="skeleton">City Name</h2>
+      <div class="info">
+        <p id="localTime" class="skeleton">Local Time: --:--</p>
+        <h1 id="temp" class="skeleton">--°C</h1>
+        <p id="description" class="skeleton">Weather Description</p>
+        <div class="details">
+          <span id="humidity" class="skeleton">Humidity: --%</span>
+          <span id="windSpeed" class="skeleton">Wind: -- km/h</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7-day forecast -->
+    <div class="forecast-container" id="forecastRow">
+      <div class="forecast-card skeleton"></div>
+      <div class="forecast-card skeleton"></div>
+      <div class="forecast-card skeleton"></div>
+      <div class="forecast-card skeleton"></div>
+      <div class="forecast-card skeleton"></div>
+      <div class="forecast-card skeleton"></div>
+      <div class="forecast-card skeleton"></div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
