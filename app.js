@@ -9,6 +9,8 @@ const elDescription = document.getElementById('description');
 const elHumidity    = document.getElementById('humidity');
 const elWindSpeed   = document.getElementById('windSpeed');
 
+let debounceTimer;
+
 const state = {
   lastSearch: null,
   weatherData: null,
@@ -141,7 +143,7 @@ function populateUI(cityName, data) {
   }
 }
 
-async function handleSearch() {
+function handleSearch() {
   const city = cityInput.value.trim();
   
   if (city.length < 2) {
@@ -155,6 +157,22 @@ async function handleSearch() {
 }
 
 searchBtn.addEventListener('click', handleSearch);
-cityInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSearch(); });
+
+cityInput.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    if (cityInput.value.trim().length >= 2) {
+      handleSearch();
+    }
+  }, 500);
+});
+
+cityInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    clearTimeout(debounceTimer);
+    handleSearch();
+  }
+});
+
 const retryBtn = document.getElementById('retry-btn');
 if (retryBtn) retryBtn.addEventListener('click', handleSearch);
